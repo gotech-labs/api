@@ -29,10 +29,10 @@ func TestAccessLog(t *testing.T) {
 				Body: []byte(`{
 					"keyword": "hello"
 				}`),
-				Headers: map[string]string{
-					"Content-Type": "application/json",
-					"X-Request-Id": "req-12345",
-					"User-Agent":   "TestUserAgent",
+				Headers: map[string][]string{
+					"Content-Type": {"application/json"},
+					"X-Request-Id": {"req-12345"},
+					"User-Agent":   {"TestUserAgent"},
 				},
 				QueryParams: map[string]string{
 					"req_id": "req-XXXXXXXXXXXXXXXXX",
@@ -68,11 +68,11 @@ func TestAccessLog(t *testing.T) {
 				Body: []byte(`{
 					"keyword": "hello"
 				}`),
-				Headers: map[string]string{
-					"Content-Type": "application/json",
-					"X-Request-Id": "req-12345",
-					"User-Agent":   "TestUserAgent",
-					"Referer":      "TestReferer",
+				Headers: map[string][]string{
+					"Content-Type": {"application/json"},
+					"X-Request-Id": {"req-12345"},
+					"User-Agent":   {"TestUserAgent"},
+					"Referer":      {"TestReferer"},
 				},
 				QueryParams: map[string]string{
 					"req_id": "req-XXXXXXXXXXXXXXXXX",
@@ -110,10 +110,10 @@ func TestAccessLog(t *testing.T) {
 			"protocol": "HTTP/1.1",
 			"client_ip": "127.0.0.1",
 			"header": {
-				"Content-Type": "application/json",
-				"X-Request-Id": "req-12345",
-				"User-Agent":   "TestUserAgent",
-				"Referer":      "TestReferer"
+				"Content-Type": ["application/json"],
+				"X-Request-Id": ["req-12345"],
+				"User-Agent":   ["TestUserAgent"],
+				"Referer":      ["TestReferer"]
 			},
 			"useragent": "TestUserAgent",
 			"referer": "TestReferer",
@@ -130,11 +130,11 @@ func TestAccessLog(t *testing.T) {
 				Method: http.MethodPost,
 				Path:   "/search",
 				Body:   []byte(`{"keyword": "hello"}`),
-				Headers: map[string]string{
-					"Content-Type": "application/json",
-					"X-Request-Id": "req-12345",
-					"User-Agent":   "TestUserAgent",
-					"Referer":      "TestReferer",
+				Headers: map[string][]string{
+					"Content-Type": {"application/json"},
+					"X-Request-Id": {"req-12345"},
+					"User-Agent":   {"TestUserAgent"},
+					"Referer":      {"TestReferer"},
 				},
 				QueryParams: map[string]string{
 					"req_id": "req-XXXXXXXXXXXXXXXXX",
@@ -175,10 +175,10 @@ func TestAccessLog(t *testing.T) {
 			"protocol": "HTTP/1.1",
 			"client_ip": "127.0.0.1",
 			"header": {
-				"Content-Type": "application/json",
-				"X-Request-Id": "req-12345",
-				"User-Agent":   "TestUserAgent",
-				"Referer":      "TestReferer"
+				"Content-Type": ["application/json"],
+				"X-Request-Id": ["req-12345"],
+				"User-Agent":   ["TestUserAgent"],
+				"Referer":      ["TestReferer"]
 			},
 			"useragent": "TestUserAgent",
 			"referer": "TestReferer",
@@ -194,8 +194,8 @@ func TestAccessLog(t *testing.T) {
 			rb = apitest.RequestBuilder{
 				Method: http.MethodGet,
 				Path:   "/search",
-				Headers: map[string]string{
-					"Content-Type": "application/json",
+				Headers: map[string][]string{
+					"Content-Type": {"application/json"},
 				},
 			}
 			req      = api.NewRequest(rb.Build())
@@ -226,7 +226,7 @@ func TestAccessLog(t *testing.T) {
 			"protocol": "HTTP/1.1",
 			"client_ip": "127.0.0.1",
 			"header": {
-				"Content-Type": "application/json"
+				"Content-Type": ["application/json"]
 			},
 			"useragent": "",
 			"referer": "",
@@ -242,8 +242,8 @@ func TestAccessLog(t *testing.T) {
 			rb = apitest.RequestBuilder{
 				Method: http.MethodGet,
 				Path:   "/search",
-				Headers: map[string]string{
-					"Content-Type": "application/json",
+				Headers: map[string][]string{
+					"Content-Type": {"application/json"},
 				},
 			}
 			req      = api.NewRequest(rb.Build())
@@ -274,7 +274,7 @@ func TestAccessLog(t *testing.T) {
 			"protocol": "HTTP/1.1",
 			"client_ip": "127.0.0.1",
 			"header": {
-				"Content-Type": "application/json"
+				"Content-Type": ["application/json"]
 			},
 			"useragent": "",
 			"referer": "",

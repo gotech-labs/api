@@ -12,7 +12,7 @@ type RequestBuilder struct {
 	Method      string
 	Path        string
 	Body        []byte
-	Headers     map[string]string
+	Headers     map[string][]string
 	PathParams  map[string]string
 	QueryParams map[string]string
 }
@@ -27,9 +27,7 @@ func (rb RequestBuilder) Build() *http.Request {
 		req = mux.SetURLVars(req, rb.PathParams)
 	}
 	if len(rb.Headers) > 0 {
-		for k, v := range rb.Headers {
-			req.Header.Add(k, v)
-		}
+		req.Header = http.Header(rb.Headers)
 	}
 	if len(rb.QueryParams) > 0 {
 		values := req.URL.Query()

@@ -17,8 +17,8 @@ type Request interface {
 	Method() string
 	Path() string
 	Body() []byte
-	Headers() map[string]string
-	Header(key string) string
+	Headers() map[string][]string
+	Header(key string) []string
 	QueryParameter(key string) string
 	QueryParameters() map[string]string
 	PathParameter(key string) string
@@ -64,18 +64,16 @@ func (r *request) Body() []byte {
 	return b
 }
 
-func (r *request) Headers() map[string]string {
-	params := make(map[string]string, 0)
+func (r *request) Headers() map[string][]string {
+	params := make(map[string][]string, 0)
 	for key, values := range r.Request.Header {
-		for _, val := range values {
-			params[key] = strings.TrimSpace(val)
-		}
+		params[key] = values
 	}
 	return params
 }
 
-func (r *request) Header(key string) string {
-	return r.Request.Header.Get(key)
+func (r *request) Header(key string) []string {
+	return r.Request.Header.Values(key)
 }
 
 func (r *request) QueryParameter(key string) string {
@@ -98,14 +96,14 @@ func (r *request) PathParameter(key string) string {
 }
 
 func (r *request) ClientIP() string {
-	if ip := r.Header(headerXForwardedFor); ip != "" {
+	if ip := r.Request.Header.Get(headerXForwardedFor); ip != "" {
 		i := strings.IndexAny(ip, ",")
 		if i > 0 {
 			return strings.TrimSpace(ip[:i])
 		}
 		return ip
 	}
-	if ip := r.Header(headerXRealIP); ip != "" {
+	if ip := r.Request.Header.Get(headerXRealIP); ip != "" {
 		return ip
 	}
 	ra, _, _ := net.SplitHostPort(r.RemoteAddr)

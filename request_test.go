@@ -28,11 +28,11 @@ func TestNewRequest(t *testing.T) {
 					"time": "2022-12-24T00:00:00+09:00",
 					"message": "%s message"
 				}`),
-			Headers: map[string]string{
-				"Content-Type": "application/json",
-				"X-Request-Id": "req-12345",
-				"User-Agent":   "TestUserAgent",
-				"Referer":      "TestReferer",
+			Headers: map[string][]string{
+				"Content-Type": {"application/json"},
+				"X-Request-Id": {"req-12345"},
+				"User-Agent":   {"TestUserAgent"},
+				"Referer":      {"TestReferer"},
 			},
 		}
 	)
