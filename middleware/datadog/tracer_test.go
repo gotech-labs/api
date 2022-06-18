@@ -11,8 +11,8 @@ import (
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/mocktracer"
 
 	"github.com/gotech-labs/api"
+	apitest "github.com/gotech-labs/api/http/testing"
 	. "github.com/gotech-labs/api/middleware/datadog"
-	apitest "github.com/gotech-labs/api/testing"
 )
 
 func TestHealth(t *testing.T) {
@@ -44,20 +44,22 @@ func TestHealth(t *testing.T) {
 					Method: test.method,
 					Path:   test.path,
 				}
-				req     = api.NewRequest(rb.Build())
+				req     = rb.Build()
 				handler = func(ctx context.Context, req api.Request) api.Response {
 					return test.response
 				}
-				tracer = New("api test", "test").
-					WithEnabledTraceLogger(bytes.NewBuffer(nil)).
-					WithEnabledRuntimeMetrics()
+				middleware = New("api test", "test").
+						WithEnabledTraceLogger(bytes.NewBuffer(nil)).
+						WithEnabledRuntimeMetrics().
+						Middleware()
 			)
+			defer StopTracer()
 
 			mt := mocktracer.Start()
 			defer mt.Stop()
 
 			// call middleware function
-			resp := tracer.Middleware(handler)(context.Background(), req)
+			resp := middleware(handler)(context.Background(), req)
 
 			// assert response
 			assert.Equal(t, test.response.Status(), resp.Status())

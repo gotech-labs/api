@@ -1,4 +1,4 @@
-package api_test
+package http_test
 
 import (
 	"net/http"
@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	. "github.com/gotech-labs/api"
+	. "github.com/gotech-labs/api/http"
 	apitest "github.com/gotech-labs/api/testing"
 )
 

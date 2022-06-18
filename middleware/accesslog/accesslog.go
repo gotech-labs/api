@@ -27,38 +27,40 @@ type accessLog struct {
 	logger               *log.Logger
 }
 
-func (mw *accessLog) Middleware(next api.HandlerFunc) api.HandlerFunc {
-	return func(ctx context.Context, req api.Request) (resp api.Response) {
-		var (
-			body []byte
-		)
-		if mw.loggingFilter(req.Path()) {
-			if mw.loggingReqBodyFilter(req) && req.ContentLength() > 0 {
-				body = req.Body()
-			}
-			defer func(begin time.Time) {
-				evt := mw.logEvent(resp.Status()).
-					Int("status", resp.Status()).
-					Str("method", req.Method()).
-					Str("path", req.Path()).
-					Interface("query", req.QueryParameters()).
-					Interface("header", req.Headers()).
-					Str("protocol", req.Protocol()).
-					Str("client_ip", req.ClientIP()).
-					Str("useragent", req.UserAgent()).
-					Str("referer", req.Referer()).
-					Dur("latency", system.CurrentTime().Sub(begin)).
-					Str("target", req.Host()).
-					Str("server", host)
-				if len(body) > 0 {
-					evt = evt.RawJSON("body", body)
+func (mw *accessLog) Middleware() api.MiddlewareFunc {
+	return func(next api.HandlerFunc) api.HandlerFunc {
+		return func(ctx context.Context, req api.Request) (resp api.Response) {
+			var (
+				body []byte
+			)
+			if mw.loggingFilter(req.Path()) {
+				if mw.loggingReqBodyFilter(req) && req.ContentLength() > 0 {
+					body = req.Body()
 				}
-				// write access log
-				evt.Send()
-			}(system.CurrentTime())
+				defer func(begin time.Time) {
+					evt := mw.logEvent(resp.Status()).
+						Int("status", resp.Status()).
+						Str("method", req.Method()).
+						Str("path", req.Path()).
+						Interface("query", req.QueryParameters()).
+						Interface("header", req.Headers()).
+						Str("protocol", req.Protocol()).
+						Str("client_ip", req.ClientIP()).
+						Str("useragent", req.UserAgent()).
+						Str("referer", req.Referer()).
+						Dur("latency", system.CurrentTime().Sub(begin)).
+						Str("target", req.Host()).
+						Str("server", host)
+					if len(body) > 0 {
+						evt = evt.RawJSON("body", body)
+					}
+					// write access log
+					evt.Send()
+				}(system.CurrentTime())
+			}
+			// call next handler function
+			return next(ctx, req)
 		}
-		// call next handler function
-		return next(ctx, req)
 	}
 }
 

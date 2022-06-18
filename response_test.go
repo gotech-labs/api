@@ -85,6 +85,11 @@ func TestResponseBody(t *testing.T) {
 		expected := json.RawMessage(`{"message": "OK"}`)
 		assert.Equal(t, expected, actual.Body())
 	})
+	t.Run("bytes result", func(t *testing.T) {
+		actual := OK([]byte(`{"message": "OK"}`))
+		expected := json.RawMessage(`{"message": "OK"}`)
+		assert.Equal(t, expected, actual.Body())
+	})
 	t.Run("struct result", func(t *testing.T) {
 		type response struct {
 			ID     int

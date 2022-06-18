@@ -9,7 +9,7 @@ import (
 	"os"
 	"testing"
 
-	apitest "github.com/gotech-labs/api/testing"
+	apitest "github.com/gotech-labs/api/http/testing"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/gotech-labs/api"
@@ -39,7 +39,7 @@ func TestAccessLog(t *testing.T) {
 					"pretty": "true",
 				},
 			}
-			req      = api.NewRequest(rb.Build())
+			req      = rb.Build()
 			buf      = bytes.NewBuffer(nil)
 			skipPath = []string{rb.Path} // skip path
 			filter   = func(req api.Request) bool {
@@ -48,12 +48,13 @@ func TestAccessLog(t *testing.T) {
 			handler = func(ctx context.Context, req api.Request) api.Response {
 				return api.OK(map[string]string{"message": "ok"})
 			}
+			middleware = New(buf).
+					WithSkipPath(skipPath...).
+					WithLoggingReqBodyFilter(filter).
+					Middleware()
 		)
 		// call middleware function
-		resp := New(buf).
-			WithSkipPath(skipPath...).
-			WithLoggingReqBodyFilter(filter).
-			Middleware(handler)(context.Background(), req)
+		resp := middleware(handler)(context.Background(), req)
 		assert.Equal(t, http.StatusOK, resp.Status())
 
 		// assert log message
@@ -79,7 +80,7 @@ func TestAccessLog(t *testing.T) {
 					"pretty": "true",
 				},
 			}
-			req      = api.NewRequest(rb.Build())
+			req      = rb.Build()
 			buf      = bytes.NewBuffer(nil)
 			skipPath = []string{}
 			filter   = func(req api.Request) bool {
@@ -88,12 +89,13 @@ func TestAccessLog(t *testing.T) {
 			handler = func(ctx context.Context, req api.Request) api.Response {
 				return api.OK(map[string]string{"message": "ok"})
 			}
+			middleware = New(buf).
+					WithSkipPath(skipPath...).
+					WithLoggingReqBodyFilter(filter).
+					Middleware()
 		)
 		// call middleware function
-		resp := New(buf).
-			WithSkipPath(skipPath...).
-			WithLoggingReqBodyFilter(filter).
-			Middleware(handler)(context.Background(), req)
+		resp := middleware(handler)(context.Background(), req)
 		assert.Equal(t, http.StatusOK, resp.Status())
 
 		expected := fmt.Sprintf(`{
@@ -141,7 +143,7 @@ func TestAccessLog(t *testing.T) {
 					"pretty": "true",
 				},
 			}
-			req      = api.NewRequest(rb.Build())
+			req      = rb.Build()
 			buf      = bytes.NewBuffer(nil)
 			skipPath = []string{}
 			filter   = func(req api.Request) bool {
@@ -150,12 +152,13 @@ func TestAccessLog(t *testing.T) {
 			handler = func(ctx context.Context, req api.Request) api.Response {
 				return api.OK(map[string]string{"message": "ok"})
 			}
+			middleware = New(buf).
+					WithSkipPath(skipPath...).
+					WithLoggingReqBodyFilter(filter).
+					Middleware()
 		)
 		// call middleware function
-		resp := New(buf).
-			WithSkipPath(skipPath...).
-			WithLoggingReqBodyFilter(filter).
-			Middleware(handler)(context.Background(), req)
+		resp := middleware(handler)(context.Background(), req)
 		assert.Equal(t, http.StatusOK, resp.Status())
 
 		expected := fmt.Sprintf(`{
@@ -198,7 +201,7 @@ func TestAccessLog(t *testing.T) {
 					"Content-Type": {"application/json"},
 				},
 			}
-			req      = api.NewRequest(rb.Build())
+			req      = rb.Build()
 			buf      = bytes.NewBuffer(nil)
 			skipPath = []string{}
 			filter   = func(req api.Request) bool {
@@ -207,12 +210,13 @@ func TestAccessLog(t *testing.T) {
 			handler = func(ctx context.Context, req api.Request) api.Response {
 				return api.BadRequest(errors.New("bad request"))
 			}
+			middleware = New(buf).
+					WithSkipPath(skipPath...).
+					WithLoggingReqBodyFilter(filter).
+					Middleware()
 		)
 		// call middleware function
-		resp := New(buf).
-			WithSkipPath(skipPath...).
-			WithLoggingReqBodyFilter(filter).
-			Middleware(handler)(context.Background(), req)
+		resp := middleware(handler)(context.Background(), req)
 		assert.Equal(t, http.StatusBadRequest, resp.Status())
 
 		expected := fmt.Sprintf(`{
@@ -246,7 +250,7 @@ func TestAccessLog(t *testing.T) {
 					"Content-Type": {"application/json"},
 				},
 			}
-			req      = api.NewRequest(rb.Build())
+			req      = rb.Build()
 			buf      = bytes.NewBuffer(nil)
 			skipPath = []string{}
 			filter   = func(req api.Request) bool {
@@ -255,12 +259,13 @@ func TestAccessLog(t *testing.T) {
 			handler = func(ctx context.Context, req api.Request) api.Response {
 				return api.InternalServerError(errors.New("unexpected error"))
 			}
+			middleware = New(buf).
+					WithSkipPath(skipPath...).
+					WithLoggingReqBodyFilter(filter).
+					Middleware()
 		)
 		// call middleware function
-		resp := New(buf).
-			WithSkipPath(skipPath...).
-			WithLoggingReqBodyFilter(filter).
-			Middleware(handler)(context.Background(), req)
+		resp := middleware(handler)(context.Background(), req)
 		assert.Equal(t, http.StatusInternalServerError, resp.Status())
 
 		expected := fmt.Sprintf(`{

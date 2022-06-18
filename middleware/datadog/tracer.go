@@ -36,36 +36,41 @@ type datadog struct {
 	resourceNameFunc func(api.Request) string
 }
 
-func (mw *datadog) Middleware(next api.HandlerFunc) api.HandlerFunc {
-	return func(ctx context.Context, req api.Request) (resp api.Response) {
-		var (
-			opts = []ddtrace.StartSpanOption{
-				tracer.SpanType(ext.SpanTypeHTTP),
-				tracer.ServiceName(mw.serviceName),
-				tracer.ResourceName(mw.resourceNameFunc(req)),
-				tracer.Tag(tags.Method, req.Method()),
-				tracer.Tag(tags.URL, req.Path()),
-				tracer.Measured(),
-			}
-			carrier = tracer.HTTPHeadersCarrier(http.Header(req.Headers()))
-			span    ddtrace.Span
-		)
-		if spanCtx, err := tracer.Extract(carrier); err == nil {
-			opts = append(opts, tracer.ChildOf(spanCtx))
-		}
-		// pass the span through the request context
-		span, ctx = tracer.StartSpanFromContext(ctx, tags.Operation, opts...)
+func (mw *datadog) Middleware() api.MiddlewareFunc {
+	// start datadog tracer
+	tracer.Start(mw.tracerOpts...)
 
-		defer func() {
-			status := resp.Status()
-			span.SetTag(tags.Status, status)
-			if status >= 400 {
-				span.SetTag(tags.Error, fmt.Sprintf("%d %s", status, http.StatusText(status)))
+	return func(next api.HandlerFunc) api.HandlerFunc {
+		return func(ctx context.Context, req api.Request) (resp api.Response) {
+			var (
+				opts = []ddtrace.StartSpanOption{
+					tracer.SpanType(ext.SpanTypeHTTP),
+					tracer.ServiceName(mw.serviceName),
+					tracer.ResourceName(mw.resourceNameFunc(req)),
+					tracer.Tag(tags.Method, req.Method()),
+					tracer.Tag(tags.URL, req.Path()),
+					tracer.Measured(),
+				}
+				carrier = tracer.HTTPHeadersCarrier(http.Header(req.Headers()))
+				span    ddtrace.Span
+			)
+			if spanCtx, err := tracer.Extract(carrier); err == nil {
+				opts = append(opts, tracer.ChildOf(spanCtx))
 			}
-			span.Finish()
-		}()
-		// call next handler function
-		return next(ctx, req)
+			// pass the span through the request context
+			span, ctx = tracer.StartSpanFromContext(ctx, tags.Operation, opts...)
+
+			defer func() {
+				status := resp.Status()
+				span.SetTag(tags.Status, status)
+				if status >= 400 {
+					span.SetTag(tags.Error, fmt.Sprintf("%d %s", status, http.StatusText(status)))
+				}
+				span.Finish()
+			}()
+			// call next handler function
+			return next(ctx, req)
+		}
 	}
 }
 
@@ -81,11 +86,7 @@ func (mw *datadog) WithEnabledTraceLogger(writer io.Writer) *datadog {
 	return mw
 }
 
-func (mw *datadog) StartTracer() {
-	tracer.Start(mw.tracerOpts...)
-}
-
-func (mw *datadog) StopTracer() {
+func StopTracer() {
 	tracer.Stop()
 }
 

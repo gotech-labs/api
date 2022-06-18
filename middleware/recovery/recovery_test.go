@@ -10,8 +10,8 @@ import (
 	"golang.org/x/xerrors"
 
 	"github.com/gotech-labs/api"
+	apitest "github.com/gotech-labs/api/http/testing"
 	. "github.com/gotech-labs/api/middleware/recovery"
-	apitest "github.com/gotech-labs/api/testing"
 	"github.com/gotech-labs/core/system"
 )
 
@@ -23,14 +23,15 @@ func TestRecovery(t *testing.T) {
 				Path:   "/search",
 				Body:   nil,
 			}
-			req     = api.NewRequest(rb.Build())
+			req     = rb.Build()
 			handler = func(ctx context.Context, req api.Request) api.Response {
 				panic(xerrors.New("connection error"))
 			}
-			buf = bytes.NewBuffer(nil)
+			buf        = bytes.NewBuffer(nil)
+			middleware = New(buf).Middleware()
 		)
 		// call middleware function
-		resp := New(buf).Middleware(handler)(context.Background(), req)
+		resp := middleware(handler)(context.Background(), req)
 
 		expected := `{
 			"level": "error",
@@ -51,14 +52,15 @@ func TestRecovery(t *testing.T) {
 				Path:   "/search",
 				Body:   nil,
 			}
-			req     = api.NewRequest(rb.Build())
+			req     = rb.Build()
 			handler = func(ctx context.Context, req api.Request) api.Response {
 				panic("string message error")
 			}
-			buf = bytes.NewBuffer(nil)
+			buf        = bytes.NewBuffer(nil)
+			middleware = New(buf).Middleware()
 		)
 		// call middleware function
-		resp := New(buf).Middleware(handler)(context.Background(), req)
+		resp := middleware(handler)(context.Background(), req)
 
 		expected := `{
 			"level": "error",

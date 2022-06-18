@@ -18,12 +18,14 @@ type health struct {
 	body interface{}
 }
 
-func (mw *health) Middleware(next api.HandlerFunc) api.HandlerFunc {
-	return func(ctx context.Context, req api.Request) api.Response {
-		if mw.path == req.Path() {
-			return api.OK(mw.body)
+func (mw *health) Middleware() api.MiddlewareFunc {
+	return func(next api.HandlerFunc) api.HandlerFunc {
+		return func(ctx context.Context, req api.Request) api.Response {
+			if mw.path == req.Path() {
+				return api.OK(mw.body)
+			}
+			// call next handler function
+			return next(ctx, req)
 		}
-		// call next handler function
-		return next(ctx, req)
 	}
 }
